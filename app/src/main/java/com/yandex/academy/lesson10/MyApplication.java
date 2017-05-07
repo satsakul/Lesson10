@@ -9,13 +9,17 @@ public class MyApplication extends Application {
     public void onCreate() {
         if (BuildConfig.DEBUG) {
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-                    .detectAll()
+                    .detectDiskReads()
+                    .detectDiskWrites()
+                    .detectNetwork()
                     .penaltyLog()
-                    .penaltyDialog()
+                    .penaltyDropBox()
                     .build());
             StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-                    .detectAll()
+                    .detectLeakedSqlLiteObjects()
+                    //.detectLeakedClosableObjects()
                     .penaltyLog()
+                    .penaltyDeath()
                     .build());
         }
 
