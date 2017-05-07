@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -14,6 +15,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private Handler mHandler;
     private View mRootLayout;
     private ImageLoader mImageLoader;
 
@@ -24,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mHandler = new Handler();
         mImageLoader = new ImageLoader();
         mRootLayout = findViewById(R.id.layout);
 
@@ -46,11 +49,16 @@ public class MainActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(imageUrl) == false) {
             final Bitmap bitmap = mImageLoader.loadBitmap(imageUrl);
             final BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                mRootLayout.setBackground(bitmapDrawable);
-            } else {
-                mRootLayout.setBackgroundDrawable(bitmapDrawable);
-            }
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        mRootLayout.setBackground(bitmapDrawable);
+                    } else {
+                        mRootLayout.setBackgroundDrawable(bitmapDrawable);
+                    }
+                }
+            });
         }
     }
 }
