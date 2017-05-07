@@ -31,7 +31,12 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                loadImage();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadImage();
+                    }
+                }).start();
             }
         });
     }
