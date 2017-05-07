@@ -1,16 +1,11 @@
 package com.yandex.academy.lesson10;
 
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
-
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,7 +32,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadImage() {
-        final String imageUrl = mImageLoader.getImageUrl();
+        final Clazz clazz = new Clazz();
+
+        new Thread(new Runnable() {
+            public void run() {
+                clazz.foo();
+            }
+        }).start();
+
+        clazz.bar();
+
+        /*final String imageUrl = mImageLoader.getImageUrl();
         if (TextUtils.isEmpty(imageUrl) == false) {
             final Bitmap bitmap = mImageLoader.loadBitmap(imageUrl);
             final BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
@@ -45,6 +50,38 @@ public class MainActivity extends AppCompatActivity {
                 mRootLayout.setBackground(bitmapDrawable);
             } else {
                 mRootLayout.setBackgroundDrawable(bitmapDrawable);
+            }
+        }*/
+    }
+
+    private static class Clazz {
+
+        private final Object mLock1 = new Object();
+        private final Object mLock2 = new Object();
+
+        void foo() {
+            synchronized (mLock1) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                synchronized (mLock2) {
+                    Log.d("TEST", "foo");
+                }
+            }
+        }
+
+        void bar() {
+            synchronized (mLock2) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                synchronized (mLock1) {
+                    Log.d("TEST", "bar");
+                }
             }
         }
     }
