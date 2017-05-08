@@ -1,7 +1,10 @@
 package com.yandex.academy.lesson10;
 
 import android.app.Application;
+import android.os.Build;
 import android.os.StrictMode;
+
+import com.squareup.leakcanary.LeakCanary;
 
 public class MyApplication extends Application {
 
@@ -24,5 +27,14 @@ public class MyApplication extends Application {
         }
 
         super.onCreate();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            if (LeakCanary.isInAnalyzerProcess(this)) {
+                // This process is dedicated to LeakCanary for heap analysis.
+                // You should not init your app in this process.
+                return;
+            }
+            LeakCanary.install(this);
+        }
     }
 }
