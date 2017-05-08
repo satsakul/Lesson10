@@ -53,7 +53,11 @@ public class MainActivity extends AppCompatActivity {
                 Library.startAsyncTask();
 
                 Log.d("TAG", "MainActivity, start MyAsyncTask");
-                mAsyncTask = new MyAsyncTask().execute();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    mAsyncTask = new MyAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                } else {
+                    mAsyncTask = new MyAsyncTask().execute();
+                }
             }
         });
     }
