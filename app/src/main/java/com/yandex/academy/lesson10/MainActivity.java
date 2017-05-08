@@ -18,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
     private View mRootLayout;
     private View mProgressBar;
     private ImageLoader mImageLoader;
+    private AsyncTask<Void, Void, Drawable> mAsyncTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +43,11 @@ public class MainActivity extends AppCompatActivity {
                  * The task can be executed only once (an exception will be thrown
                  * if a second execution is attempted.)
                  */
-                new MyAsyncTask().execute();
+                if (mAsyncTask != null) {
+                    mAsyncTask.cancel(false);
+                }
+
+                mAsyncTask = new MyAsyncTask().execute();
             }
         });
     }
@@ -73,7 +78,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Drawable doInBackground(final Void... params) {
-            final Drawable drawable = loadImage();
+            Drawable drawable = null;
+            if (isCancelled() == false) {
+                drawable = loadImage();
+            }
+
             return drawable;
         }
 
