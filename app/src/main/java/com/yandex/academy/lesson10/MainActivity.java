@@ -18,7 +18,6 @@ public class MainActivity extends AppCompatActivity {
     private View mRootLayout;
     private View mProgressBar;
     private ImageLoader mImageLoader;
-    private AsyncTask<Void, Void, Drawable> mAsyncTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,13 +30,19 @@ public class MainActivity extends AppCompatActivity {
         mRootLayout = findViewById(R.id.layout);
         mProgressBar = findViewById(R.id.progressBar);
 
-        mAsyncTask = new MyAsyncTask();
-
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mAsyncTask.execute();
+                /*
+                 * The task instance must be created on the UI thread.
+                 *
+                 * Method execute(Params...) must be invoked on the UI thread.
+                 *
+                 * The task can be executed only once (an exception will be thrown
+                 * if a second execution is attempted.)
+                 */
+                new MyAsyncTask().execute();
             }
         });
     }
@@ -54,6 +59,10 @@ public class MainActivity extends AppCompatActivity {
         return bitmapDrawable;
     }
 
+    /*
+     * The AsyncTask class must be loaded on the UI thread.
+     * This is done automatically as of JELLY_BEAN.
+     */
     private class MyAsyncTask extends AsyncTask<Void, Void, Drawable> {
 
         @Override
