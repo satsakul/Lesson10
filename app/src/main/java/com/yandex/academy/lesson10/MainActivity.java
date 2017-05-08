@@ -13,6 +13,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,6 +47,41 @@ public class MainActivity extends AppCompatActivity {
     private Runnable mWorkerTask = new Runnable() {
         @Override
         public void run() {
+            final Handler handler1 = new Handler();
+            final Handler handler2 = new Handler();
+
+            final int[] count1 = {0};
+            final int[] count2 = {0};
+            for (int i = 0; i < 10; i++) {
+                handler1.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("TEST", "handler1, i = " + count1[0]++);
+                    }
+                });
+
+                handler2.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("TEST", "handler2, i = " + count2[0]++);
+                    }
+                });
+
+                /*handler1.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("TEST", "handler1, i = " + count1[0]++);
+                    }
+                }, 100);
+
+                handler2.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("TEST", "handler2, i = " + count2[0]++);
+                    }
+                }, 200);*/
+            }
+
             loadImage();
         }
     };
