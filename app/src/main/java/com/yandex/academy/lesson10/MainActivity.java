@@ -12,12 +12,11 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
 
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity {
 
     private View mRootLayout;
     private ImageLoader mImageLoader;
+    private Thread mWorkerThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,19 +28,23 @@ public class MainActivity extends AppCompatActivity {
         mImageLoader = new ImageLoader();
         mRootLayout = findViewById(R.id.layout);
 
+        mWorkerThread = new Thread(mWorkerTask);
+
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        loadImage();
-                    }
-                }).start();
+                mWorkerThread.start();
             }
         });
     }
+
+    private Runnable mWorkerTask = new Runnable() {
+        @Override
+        public void run() {
+            loadImage();
+        }
+    };
 
     private void loadImage() {
         final String imageUrl = mImageLoader.getImageUrl();
