@@ -5,7 +5,10 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -16,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
 
     private View mRootLayout;
     private ImageLoader mImageLoader;
-    private Thread mWorkerThread;
+    private WorkerThread mWorkerThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,13 +31,14 @@ public class MainActivity extends AppCompatActivity {
         mImageLoader = new ImageLoader();
         mRootLayout = findViewById(R.id.layout);
 
-        mWorkerThread = new Thread(mWorkerTask);
+        mWorkerThread = new WorkerThread("WorkerThread");
+        mWorkerThread.start();
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mWorkerThread.start();
+                mWorkerThread.postTask(mWorkerTask);
             }
         });
     }
@@ -63,6 +67,34 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        mWorkerThread.quit();
+        super.onPause();
+    }
+
+    private static class WorkerThread extends HandlerThread {
+
+        @Nullable
+        private Handler mHandler;
+
+        WorkerThread(final String name) {
+            super(name);
+        }
+
+        @Override
+        protected void onLooperPrepared() {
+            super.onLooperPrepared();
+            mHandler = new Handler(getLooper());
+        }
+
+        void postTask(@NonNull final Runnable runnable) {
+            if (mHandler != null) {
+                mHandler.post(runnable);
+            }
         }
     }
 }
