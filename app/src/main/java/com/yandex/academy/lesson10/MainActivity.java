@@ -2,25 +2,23 @@ package com.yandex.academy.lesson10;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
 
     private View mRootLayout;
+    private View mProgressBar;
     private ImageLoader mImageLoader;
-    private WorkerThread mWorkerThread;
+    private AsyncTask<Void, Void, Drawable> mAsyncTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,106 +29,55 @@ public class MainActivity extends AppCompatActivity {
 
         mImageLoader = new ImageLoader();
         mRootLayout = findViewById(R.id.layout);
+        mProgressBar = findViewById(R.id.progressBar);
 
-        mWorkerThread = new WorkerThread("WorkerThread");
-        mWorkerThread.start();
+        mAsyncTask = new MyAsyncTask();
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mWorkerThread.postTask(mWorkerTask);
+                mAsyncTask.execute();
             }
         });
     }
 
-    private Runnable mWorkerTask = new Runnable() {
-        @Override
-        public void run() {
-            final Handler handler1 = new Handler();
-            final Handler handler2 = new Handler();
-
-            final int[] count1 = {0};
-            final int[] count2 = {0};
-            for (int i = 0; i < 10; i++) {
-                handler1.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d("TEST", "handler1, i = " + count1[0]++);
-                    }
-                });
-
-                handler2.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d("TEST", "handler2, i = " + count2[0]++);
-                    }
-                });
-
-                /*handler1.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d("TEST", "handler1, i = " + count1[0]++);
-                    }
-                }, 100);
-
-                handler2.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d("TEST", "handler2, i = " + count2[0]++);
-                    }
-                }, 200);*/
-            }
-
-            loadImage();
-        }
-    };
-
-    private void loadImage() {
+    @Nullable
+    private Drawable loadImage() {
+        Drawable bitmapDrawable = null;
         final String imageUrl = mImageLoader.getImageUrl();
         if (TextUtils.isEmpty(imageUrl) == false) {
             final Bitmap bitmap = mImageLoader.loadBitmap(imageUrl);
-            final BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
-
-            final Handler handler = new Handler(Looper.getMainLooper());
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                        mRootLayout.setBackground(bitmapDrawable);
-                    } else {
-                        mRootLayout.setBackgroundDrawable(bitmapDrawable);
-                    }
-                }
-            });
+            bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
         }
+
+        return bitmapDrawable;
     }
 
-    @Override
-    protected void onPause() {
-        mWorkerThread.quit();
-        super.onPause();
-    }
+    private class MyAsyncTask extends AsyncTask<Void, Void, Drawable> {
 
-    private static class WorkerThread extends HandlerThread {
-
-        @Nullable
-        private Handler mHandler;
-
-        WorkerThread(final String name) {
-            super(name);
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressBar.setVisibility(View.VISIBLE);
         }
 
         @Override
-        protected void onLooperPrepared() {
-            super.onLooperPrepared();
-            mHandler = new Handler(getLooper());
+        protected Drawable doInBackground(final Void... params) {
+            final Drawable drawable = loadImage();
+            return drawable;
         }
 
-        void postTask(@NonNull final Runnable runnable) {
-            if (mHandler != null) {
-                mHandler.post(runnable);
+        @Override
+        protected void onPostExecute(final Drawable bitmapDrawable) {
+            super.onPostExecute(bitmapDrawable);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                mRootLayout.setBackground(bitmapDrawable);
+            } else {
+                mRootLayout.setBackgroundDrawable(bitmapDrawable);
             }
+
+            mProgressBar.setVisibility(View.INVISIBLE);
         }
     }
 }
