@@ -14,6 +14,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
+import com.yandex.academy.lesson10.asynctasklibrary.Library;
+
 public class MainActivity extends AppCompatActivity {
 
     private View mRootLayout;
@@ -32,8 +34,6 @@ public class MainActivity extends AppCompatActivity {
         mRootLayout = findViewById(R.id.layout);
         mProgressBar = findViewById(R.id.progressBar);
 
-        mAsyncTask = new MyAsyncTask().execute();
-
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
                     mAsyncTask.cancel(false);
                 }
 
+                Library.startAsyncTask();
+
+                Log.d("TAG", "MainActivity, start MyAsyncTask");
                 mAsyncTask = new MyAsyncTask().execute();
             }
         });
@@ -83,10 +86,9 @@ public class MainActivity extends AppCompatActivity {
         protected Drawable doInBackground(final Void... params) {
             Drawable drawable = null;
             if (isCancelled() == false) {
-                drawable = loadImage();
-
                 for (int i = 0; i < 10; i++) {
-                    Log.i("TAG", "Activity = " + MainActivity.this.hashCode()
+                    Log.i("TAG", "MyAsyncTask, i = " + i
+                            + ", Activity = " + MainActivity.this.hashCode()
                             + ", AsyncTask = " + this.hashCode());
                     try {
                         Thread.sleep(1000);
@@ -94,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
+
+                drawable = loadImage();
             }
 
             return drawable;
