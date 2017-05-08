@@ -11,6 +11,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
@@ -30,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
         mImageLoader = new ImageLoader();
         mRootLayout = findViewById(R.id.layout);
         mProgressBar = findViewById(R.id.progressBar);
+
+        mAsyncTask = new MyAsyncTask().execute();
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -81,6 +84,16 @@ public class MainActivity extends AppCompatActivity {
             Drawable drawable = null;
             if (isCancelled() == false) {
                 drawable = loadImage();
+
+                for (int i = 0; i < 10; i++) {
+                    Log.i("TAG", "Activity = " + MainActivity.this.hashCode()
+                            + ", AsyncTask = " + this.hashCode());
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             return drawable;
