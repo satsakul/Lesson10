@@ -1,25 +1,23 @@
 package com.yandex.academy.lesson10;
 
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
-import android.os.Build;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
+    static final String BROADCAST_ACTION = "com.yandex.academy.lesson10.MainActivity.BroadcastReceiver";
+
     private View mRootLayout;
     private View mProgressBar;
-    private ImageLoader mImageLoader;
-    private AsyncTask<Void, Void, Drawable> mAsyncTask;
+    private MyBroadcastReceiver mBroadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,87 +26,40 @@ public class MainActivity extends AppCompatActivity {
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mImageLoader = new ImageLoader();
         mRootLayout = findViewById(R.id.layout);
         mProgressBar = findViewById(R.id.progressBar);
 
-        mAsyncTask = new MyAsyncTask().execute();
+        mBroadcastReceiver = new MyBroadcastReceiver();
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*
-                 * The task instance must be created on the UI thread.
-                 *
-                 * Method execute(Params...) must be invoked on the UI thread.
-                 *
-                 * The task can be executed only once (an exception will be thrown
-                 * if a second execution is attempted.)
-                 */
-                if (mAsyncTask != null) {
-                    mAsyncTask.cancel(false);
-                }
-
-                mAsyncTask = new MyAsyncTask().execute();
+                mProgressBar.setVisibility(View.VISIBLE);
+                startService(new Intent(MainActivity.this, MyService.class));
             }
         });
     }
 
-    @Nullable
-    private Drawable loadImage() {
-        Drawable bitmapDrawable = null;
-        final String imageUrl = mImageLoader.getImageUrl();
-        if (TextUtils.isEmpty(imageUrl) == false) {
-            final Bitmap bitmap = mImageLoader.loadBitmap(imageUrl);
-            bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
-        }
-
-        return bitmapDrawable;
-    }
-
-    /*
-     * The AsyncTask class must be loaded on the UI thread.
-     * This is done automatically as of JELLY_BEAN.
-     */
-    private class MyAsyncTask extends AsyncTask<Void, Void, Drawable> {
+    private class MyBroadcastReceiver extends BroadcastReceiver {
 
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mProgressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected Drawable doInBackground(final Void... params) {
-            Drawable drawable = null;
-            if (isCancelled() == false) {
-                drawable = loadImage();
-
-                for (int i = 0; i < 10; i++) {
-                    Log.i("TAG", "Activity = " + MainActivity.this.hashCode()
-                            + ", AsyncTask = " + this.hashCode());
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            return drawable;
-        }
-
-        @Override
-        protected void onPostExecute(final Drawable bitmapDrawable) {
-            super.onPostExecute(bitmapDrawable);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                mRootLayout.setBackground(bitmapDrawable);
-            } else {
-                mRootLayout.setBackgroundDrawable(bitmapDrawable);
-            }
+        public void onReceive(final Context context, final Intent intent) {
+            Toast.makeText(context, "MyBroadcastReceiver.onReceive", Toast.LENGTH_SHORT).show();
 
             mProgressBar.setVisibility(View.INVISIBLE);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mBroadcastReceiver, new IntentFilter(MainActivity.BROADCAST_ACTION));
+    }
+
+    @Override
+    protected void onPause() {
+        unregisterReceiver(mBroadcastReceiver);
+        super.onPause();
     }
 }

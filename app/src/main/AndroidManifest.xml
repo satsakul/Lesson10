@@ -3,9 +3,9 @@
           xmlns:tools="http://schemas.android.com/tools"
           package="com.yandex.academy.lesson10">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
     <uses-sdk tools:overrideLibrary="com.squareup.leakcanary"/>
+
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:name=".MyApplication"
@@ -25,6 +25,10 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".MyService">
+        </service>
     </application>
 
 </manifest>
