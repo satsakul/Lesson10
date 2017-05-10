@@ -3,40 +3,40 @@ package com.yandex.academy.lesson10;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Binder;
 import android.os.IBinder;
 import android.text.TextUtils;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import android.util.Log;
 
 public class MyService extends Service {
 
+    private static final String TAG = "TAG";
+
+    private final MyBinder mBinder;
     private final ImageLoader mImageLoader;
-    private final ExecutorService mExecutorService;
 
     private boolean mStarted;
+    private String mImageName;
 
     public MyService() {
+        mBinder = new MyBinder();
         mImageLoader = new ImageLoader();
-        mExecutorService = Executors.newSingleThreadExecutor();
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.d(TAG, "MyService, onCreate");
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+        Log.d(TAG, "MyService, onBind");
+        return mBinder;
     }
 
-    @Override
-    public int onStartCommand(final Intent intent,
-                              final int flags,
-                              final int startId) {
-
-        load();
-        return super.onStartCommand(intent, flags, startId);
-    }
-
-    private void load() {
+    void loadImages() {
+        Log.d(TAG, "MyService, onStartCommand, loadImages");
         if (mStarted == false) {
             mStarted = true;
 
@@ -48,10 +48,12 @@ public class MyService extends Service {
                         if (TextUtils.isEmpty(imageUrl) == false) {
                             final Bitmap bitmap = mImageLoader.loadBitmap(imageUrl);
                             final String imageName = "myImage.png";
-                            ImageSaver.getInstance().saveImage(getApplicationContext(), bitmap, imageName);
+                            ImageSaver.getInstance().saveImage(getApplicationContext(), bitmap, mImageName);
+
+                            mImageName = imageName;
 
                             final Intent intent = new Intent(MainActivity.BROADCAST_ACTION);
-                            intent.putExtra(MainActivity.PARAM_RESULT, imageName);
+                            intent.putExtra(MainActivity.PARAM_RESULT, mImageName);
                             sendBroadcast(intent);
                         }
 
@@ -68,7 +70,14 @@ public class MyService extends Service {
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "MyService, onDestroy");
         mStarted = false;
         super.onDestroy();
+    }
+
+    class MyBinder extends Binder {
+        MyService getService() {
+            return MyService.this;
+        }
     }
 }
