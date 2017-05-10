@@ -5,7 +5,16 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class MyService extends Service {
+
+    private final ExecutorService mExecutorService;
+
+    public MyService() {
+        mExecutorService = Executors.newSingleThreadExecutor();
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -18,12 +27,12 @@ public class MyService extends Service {
                               final int flags,
                               final int startId) {
 
-        load();
+        load(startId);
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private void load() {
-        new Thread(new Runnable() {
+    private void load(final int startId) {
+        mExecutorService.execute(new Runnable() {
             @Override
             public void run() {
                 for (int i = 0; i < 10; i++) {
@@ -37,7 +46,9 @@ public class MyService extends Service {
 
                 final Intent intent = new Intent(MainActivity.BROADCAST_ACTION);
                 sendBroadcast(intent);
+
+                stopSelf(startId);
             }
-        }).start();
+        });
     }
 }
