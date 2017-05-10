@@ -28,7 +28,7 @@
         </activity>
 
         <service
-            android:name=".MyService">
+            android:name=".MyIntentService">
         </service>
     </application>
 
