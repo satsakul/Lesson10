@@ -68,7 +68,9 @@ class ImageLoader {
 
     @Nullable
     private String processEntry(XmlPullParser parser) throws IOException, XmlPullParserException {
-        while (parser.next() != XmlPullParser.END_DOCUMENT) {
+        //https://issues.jenkins-ci.org/browse/JENKINS-14502
+        int eventType = parser.next();
+        while (eventType != XmlPullParser.END_DOCUMENT) {
             if (parser.getEventType() == XmlPullParser.START_TAG
                     && "img".equals(parser.getName())) {
                 for (int i = 1; i < parser.getAttributeCount(); i++) {
@@ -79,6 +81,7 @@ class ImageLoader {
                     }
                 }
             }
+            eventType = parser.next();
         }
 
         return null;
@@ -101,29 +104,6 @@ class ImageLoader {
             buffer.flush();
             byte[] bytes = buffer.toByteArray();
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Nullable
-    byte[] loadBitmapData(final String srcUrl) {
-        try {
-            URL url = new URL(srcUrl);
-            URLConnection urlConnection = url.openConnection();
-            InputStream is = urlConnection.getInputStream();
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-            int nRead;
-            byte[] data = new byte[16384];
-
-            while ((nRead = is.read(data, 0, data.length)) != -1) {
-                buffer.write(data, 0, nRead);
-            }
-            buffer.flush();
-            byte[] bitmap = buffer.toByteArray();
-            return bitmap;
         } catch (IOException e) {
             e.printStackTrace();
         }
